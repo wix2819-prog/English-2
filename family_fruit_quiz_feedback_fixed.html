@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار الكلمات - العائلة والفواكه</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+.container { max-width: 800px; margin: 20px auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.tabs { display: flex; justify-content: center; margin-bottom: 20px; }
+.tab { background: #3aafa9; color: white; border: none; padding: 10px 20px; cursor: pointer; margin: 0 5px; border-radius: 5px; }
+.tab.active { background: #2b7a78; }
+.question { margin-bottom: 15px; }
+.option { margin-right: 10px; display:block; }
+.feedback { font-size: 0.9em; margin-left: 20px; }
+button { background: #3aafa9; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+button:hover { background: #2b7a78; }
+.result { font-weight: bold; margin-top: 15px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align:center;">🍎 اختبار الكلمات - العائلة والفواكه 🍒</h2>
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('ar-en')">من العربية إلى الإنجليزية</button>
+        <button class="tab" onclick="showTab('en-ar')">From English to Arabic</button>
+    </div>
+
+    <div id="ar-en" class="quiz"></div>
+    <div id="en-ar" class="quiz" style="display:none;"></div>
+
+    <div style="text-align:center;">
+        <button onclick="shuffleQuestions()">إعادة ترتيب الأسئلة 🔄</button>
+        <button onclick="checkAnswers()">عرض النتيجة ✅</button>
+        <div id="result" class="result"></div>
+    </div>
+</div>
+
+<script>
+const words = [{"arabic": "مجرم", "english": "Criminal"}, {"arabic": "ضابط شرطة", "english": "Police officer"}, {"arabic": "أناناس", "english": "Pineapple"}, {"arabic": "ابن العم", "english": "Cousin (male)"}, {"arabic": "البرقوق", "english": "Plum"}, {"arabic": "ابنه", "english": "His son"}, {"arabic": "ابن", "english": "Son"}, {"arabic": "فراولة", "english": "Strawberry"}, {"arabic": "ابنة الأخ", "english": "Niece"}, {"arabic": "بطيخ", "english": "Watermelon"}, {"arabic": "ابن الأخ", "english": "Nephew"}, {"arabic": "الخوخ", "english": "Peach"}, {"arabic": "حفيد", "english": "Grandson"}, {"arabic": "كمثرى", "english": "Pear"}, {"arabic": "حفيدة", "english": "Granddaughter"}, {"arabic": "عنب", "english": "Grapes"}, {"arabic": "زوج الأم", "english": "Stepfather"}, {"arabic": "ليمون", "english": "Lemon"}, {"arabic": "زوجة الأب", "english": "Stepmother"}, {"arabic": "ليمون أخضر", "english": "Lime"}, {"arabic": "أم الزوجة", "english": "Mother-in-law"}, {"arabic": "يوسف فندي", "english": "Mandarin / Tangerine"}, {"arabic": "أبو الزوج", "english": "Father-in-law"}, {"arabic": "كرز", "english": "Cherry"}, {"arabic": "الوالدين", "english": "Parents"}, {"arabic": "فاكهة", "english": "Fruit"}, {"arabic": "الجدين", "english": "Grandparents"}];
+
+function shuffle(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function getOptions(word,key){ 
+  let correct = word[key]; 
+  let others = words.map(w=>w[key]).filter(v=>v!==correct); 
+  let choices = others.sort(()=>0.5-Math.random()).slice(0,3); 
+  choices.push(correct); 
+  choices.sort(()=>0.5-Math.random()); 
+  return choices; 
+}
+
+function renderQuizzes(){
+  const arEn = document.getElementById('ar-en');
+  const enAr = document.getElementById('en-ar');
+  arEn.innerHTML = '';
+  enAr.innerHTML = '';
+  words.forEach((w,i)=>{
+    let optsArEn = getOptions(w,'english');
+    let optsEnAr = getOptions(w,'arabic');
+
+    // عربي -> إنجليزي
+    let divArEn = document.createElement('div');
+    divArEn.className='question';
+    divArEn.innerHTML = `<p>${i+1}. ما الترجمة الإنجليزية لكلمة <b>${w.arabic}</b>؟</p>`;
+    optsArEn.forEach(opt => {
+      let label = document.createElement('label');
+      label.className='option';
+      label.innerHTML = `<input type="radio" name="ar${i}" value="${opt}"> ${opt}<div class="feedback" style="display:none"></div>`;
+      label.querySelector('input').addEventListener('change', function(e){
+        let feedback = label.querySelector('.feedback');
+        if(this.value === w.english){ feedback.innerText='إجابة صحيحة!'; feedback.style.color='green'; }
+        else{ feedback.innerText='إجابة خاطئة!'; feedback.style.color='red'; }
+        feedback.style.display='block';
+      });
+      divArEn.appendChild(label);
+    });
+    arEn.appendChild(divArEn);
+
+    // إنجليزي -> عربي
+    let divEnAr = document.createElement('div');
+    divEnAr.className='question';
+    divEnAr.innerHTML = `<p>${i+1}. ما معنى الكلمة <b>${w.english}</b> بالعربية؟</p>`;
+    optsEnAr.forEach(opt => {
+      let label = document.createElement('label');
+      label.className='option';
+      label.innerHTML = `<input type="radio" name="en${i}" value="${opt}"> ${opt}<div class="feedback" style="display:none"></div>`;
+      label.querySelector('input').addEventListener('change', function(e){
+        let feedback = label.querySelector('.feedback');
+        if(this.value === w.arabic){ feedback.innerText='إجابة صحيحة!'; feedback.style.color='green'; }
+        else{ feedback.innerText='إجابة خاطئة!'; feedback.style.color='red'; }
+        feedback.style.display='block';
+      });
+      divEnAr.appendChild(label);
+    });
+    enAr.appendChild(divEnAr);
+  });
+}
+
+function showTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.quiz').forEach(q=>q.style.display='none');
+  document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+  document.getElementById(tab).style.display='block';
+}
+
+function shuffleQuestions(){
+  shuffle(words);
+  renderQuizzes();
+  document.getElementById('result').innerText='';
+}
+
+function checkAnswers(){
+  let correct=0, total=words.length*2;
+  words.forEach((w,i)=>{
+    const a=document.querySelector(`input[name='ar${i}']:checked`);
+    const b=document.querySelector(`input[name='en${i}']:checked`);
+    if(a && a.value===w.english) correct++;
+    if(b && b.value===w.arabic) correct++;
+  });
+  document.getElementById('result').innerText=`إجاباتك الصحيحة: ${correct} من ${total}`;
+}
+
+renderQuizzes();
+</script>
+
+</body>
+</html>
